@@ -122,8 +122,8 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
         return true;
     }
 
-    bool KinectGestures.GestureListenerInterface.GestureCancelled(long userId, int userIndex, KinectGestures.Gestures gesture, KinectInterop.JointType joint)
+    public bool GestureCancelled(long userId, int userIndex, KinectGestures.Gestures gesture, KinectInterop.JointType joint)
     {
-        throw new System.NotImplementedException();
+        return false;
     }
 }
