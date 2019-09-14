@@ -2158,13 +2158,8 @@ public class KinectManager : MonoBehaviour
 	        }
 			else if(computeColorMap && displayColorMap)
 			{
-                //Rect cameraRect = new Rect(CusKincetManager.Instance.mVideoScreenRect);
-                //mColorRenderTexture = new RenderTexture(sensorData.colorImageTexture.width, sensorData.colorImageTexture.height, 24);// sensorData.colorImageTexture;
-
-
-                //mColorRenderTexture.material.mainTexture = sensorData.colorImageTexture;
-                //DisplayMapsWidthPercent = (sensorData.depthImageWidth / 2) * 100 / cameraRect.width;
-
+              
+              
                 if (usersClrRect.width == 0 || usersClrRect.height == 0)
                 {
                     // get the main camera rectangle
@@ -2374,65 +2369,101 @@ public class KinectManager : MonoBehaviour
 				// Check for complete gestures
 				List<KinectGestures.GestureData> gesturesData = playerGesturesData[userId];
 				int userIndex = GetUserIndexById(userId);
-				
-				foreach(KinectGestures.GestureData gestureData in gesturesData)
-				{
-					if(gestureData.complete)
-					{
-//						if(gestureData.gesture == KinectGestures.Gestures.Click)
-//						{
-//							if(controlMouseCursor)
-//							{
-//								MouseControl.MouseClick();
-//							}
-//						}
-				
-						foreach(KinectGestures.GestureListenerInterface listener in gestureListeners)
-						{
-							if(listener != null && listener.GestureCompleted(userId, userIndex, gestureData.gesture, (KinectInterop.JointType)gestureData.joint, gestureData.screenPos))
-							{
-								ResetPlayerGestures(userId);
-							}
-						}
-					}
-					else if(gestureData.cancelled)
-					{
-						foreach(KinectGestures.GestureListenerInterface listener in gestureListeners)
-						{
-							if(listener != null && listener.GestureCancelled(userId, userIndex, gestureData.gesture, (KinectInterop.JointType)gestureData.joint))
-							{
-								ResetGesture(userId, gestureData.gesture);
-							}
-						}
-					}
-					else if(gestureData.progress >= 0.1f)
-					{
-//						if((gestureData.gesture == KinectGestures.Gestures.RightHandCursor || 
-//						    gestureData.gesture == KinectGestures.Gestures.LeftHandCursor) && 
-//						   gestureData.progress >= 0.5f)
-//						{
-//							if(handCursor != null)
-//							{
-//								handCursor.transform.position = Vector3.Lerp(handCursor.transform.position, gestureData.screenPos, 3 * Time.deltaTime);
-//							}
-//							
-//							if(controlMouseCursor)
-//							{
-//								MouseControl.MouseMove(gestureData.screenPos);
-//							}
-//						}
-						
-						foreach(KinectGestures.GestureListenerInterface listener in gestureListeners)
-						{
-							if(listener != null)
-							{
-								listener.GestureInProgress(userId, userIndex, gestureData.gesture, gestureData.progress, 
-								                           (KinectInterop.JointType)gestureData.joint, gestureData.screenPos);
-							}
-						}
-					}
-				}
-			}
+
+                for (int i = 0; i < gesturesData.Count; i++)
+                {
+                    if (gesturesData[i].complete)
+                    {
+                        foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
+                        {
+                            if (listener != null && listener.GestureCompleted(userId, userIndex, gesturesData[i].gesture, (KinectInterop.JointType)gesturesData[i].joint, gesturesData[i].screenPos))
+                            {
+                                ResetPlayerGestures(userId);
+                            }
+                        }
+                    }
+                    else if (gesturesData[i].cancelled)
+                    {
+                        foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
+                        {
+                            if (listener != null && listener.GestureCancelled(userId, userIndex, gesturesData[i].gesture, (KinectInterop.JointType)gesturesData[i].joint))
+                            {
+                                ResetGesture(userId, gesturesData[i].gesture);
+                            }
+                        }
+
+                    }
+                    else if (gesturesData[i].progress >= 0.1f)
+                    {
+                        foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
+                        {
+                            if (listener != null)
+                            {
+                                listener.GestureInProgress(userId, userIndex, gesturesData[i].gesture, gesturesData[i].progress,
+                                                           (KinectInterop.JointType)gesturesData[i].joint, gesturesData[i].screenPos);
+                            }
+                        }
+                    }
+
+                }
+                //foreach (KinectGestures.GestureData item in gesturesData)
+                //{
+                //    if (item.complete)
+                //    {
+                //        //						if(gestureData.gesture == KinectGestures.Gestures.Click)
+                //        //						{
+                //        //							if(controlMouseCursor)
+                //        //							{
+                //        //								MouseControl.MouseClick();
+                //        //							}
+                //        //						}
+
+                //        foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
+                //        {
+                //            if (listener != null && listener.GestureCompleted(userId, userIndex, item.gesture, (KinectInterop.JointType)item.joint, item.screenPos))
+                //            {
+                //                ResetPlayerGestures(userId);
+                //            }
+                //        }
+                //    }
+                //    else if (item.cancelled)
+                //    {
+                //        foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
+                //        {
+                //            if (listener != null && listener.GestureCancelled(userId, userIndex, item.gesture, (KinectInterop.JointType)item.joint))
+                //            {
+                //                ResetGesture(userId, item.gesture);
+                //            }
+                //        }
+                //    }
+                //    else if (item.progress >= 0.1f)
+                //    {
+                //        //if ((gestureData.gesture == KinectGestures.Gestures.RightHandCursor ||
+                //        //    gestureData.gesture == KinectGestures.Gestures.LeftHandCursor) &&
+                //        //   gestureData.progress >= 0.5f)
+                //        //{
+                //        //    if (handCursor != null)
+                //        //    {
+                //        //        handCursor.transform.position = Vector3.Lerp(handCursor.transform.position, gestureData.screenPos, 3 * Time.deltaTime);
+                //        //    }
+
+                //        //    if (controlMouseCursor)
+                //        //    {
+                //        //        MouseControl.MouseMove(gestureData.screenPos);
+                //        //    }
+                //        //}
+
+                //        foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
+                //        {
+                //            if (listener != null)
+                //            {
+                //                listener.GestureInProgress(userId, userIndex, item.gesture, item.progress,
+                //                                           (KinectInterop.JointType)item.joint, item.screenPos);
+                //            }
+                //        }
+                //    }
+                //}
+            }
 			
 		}
 	}

@@ -10,6 +10,7 @@ public class CusKincetManager
 {
     public HandleStateChange mHandleStateChange;
     public int mPlayerIndex = 0;
+
     //处理状态。
     eState mCurState = eState.eWaitPlayer;
     public eState CurState
@@ -41,6 +42,5 @@ public class CusKincetManager
                      
         }
     }
-    
     
 }
