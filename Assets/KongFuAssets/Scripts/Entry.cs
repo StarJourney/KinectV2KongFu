@@ -13,6 +13,8 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     //提示文字。
     public Text mTipsText;
 
+    public GameObject circleParent;
+
     //进度条相关
     public float mImageProgress = 0f;
     public Image mTimerImage;
@@ -29,45 +31,53 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
         mKm = KinectManager.Instance;
         CusKincetManager.Instance.mHandleStateChange += HandleStateChange;
 
+        //cxk add
+        SetGameObjectActive(circleParent, false);
+
     }
 
     private void Update()
     {
         UpdatePos();
         CheckVideoPlayerState();
-        mTimerImage.fillAmount = mImageProgress / mHoverTime;
     }
    
-    private void CheckUserInputInfo()
+    private void CheckUserInputInfo(eState newState)
     {
-        if (CusKincetManager.Instance.CurState == eState.eWaitStart)
+        if (CusKincetManager.Instance.CurState != newState)
         {
-            CusKincetManager.Instance.CurState = eState.eStart;
+            CusKincetManager.Instance.CurState = newState;
         }
     }
     private void UpdatePos()
     {
         var userId = KinectManager.Instance.GetUserIdByIndex(CusKincetManager.Instance.mPlayerIndex);
+        //Debug.Log("userID===================" + userId);
         var bd = KinectManager.Instance.GetUserBodyData(userId);
         Vector3 vPos = bd.position;
-        Debug.Log("mpos " + vPos);
         Vector3 mPos = new Vector3(vPos.x, mPlayer.transform.position.y, vPos.z);
         mPlayer.transform.localPosition = mPos;
-        
+        mTimerImage.fillAmount = mImageProgress / mHoverTime;
+
     }
     private void CheckVideoPlayerState()
     {
         if (mVideoplayer == null)
             return;
-
-        if (Mathf.Abs((float)mVideoplayer.time- (float)mVideoplayer.clip.length)<0.05f && CusKincetManager.Instance.CurState == eState.eStart)
+        if (Mathf.Abs((float)mVideoplayer.time - (float)mVideoplayer.length) <= 0.5f)
         {
             mVideoplayer.time = 0;
             Debug.Log("练习完成！！");
             //如果现在玩家还被追踪，就直接设置为eWaitStart.否则等待玩家。
-            //var userId = KinectManager.Instance.GetUserIdByIndex(CusKincetManager.Instance.mPlayerIndex);
-
-            CusKincetManager.Instance.CurState = eState.eWaitStart;
+            var userId = KinectManager.Instance.GetUserIdByIndex(CusKincetManager.Instance.mPlayerIndex);
+            if (userId!=0)
+            {
+                CusKincetManager.Instance.CurState = eState.eWaitStart;
+            }
+            else
+            {
+                CusKincetManager.Instance.CurState = eState.eWaitPlayer;
+            }
         }
     }
 
@@ -80,19 +90,21 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
                 //UI提示玩家进入场景。
                 mTipsText.text = Tips.WAIT_PLAYER;
 
+                VideoPlayStop();
                 break;
             case eState.eWaitStart:
                 Debug.Log("waitting player start pratice KongFu!!");
                 //UI提示玩家准备开始，通过手势开始体验。
                 mTipsText.text = Tips.WAIT_START;
+
+                VideoPlayStop();
                 break;
 
             case eState.eStart:
                 //已经开始体验，可以退出，或者视频完成后自动推出。边长eQuit状态。
                 //eQuit状态要经过处理之后回到eWaitPlayer-->eWaitStart开始下一次体验。
                 mTipsText.text = Tips.WAIT_PRATICING;
-                //if(!mVideoplayer.isPlaying)
-                mVideoplayer.Play();
+                VideoPlayfromStart();
 
                 Debug.Log("player is started partice KongFu...");
                 break;
@@ -130,29 +142,61 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
         CusKincetManager.Instance.CurState = eState.eWaitPlayer;
     }
 
+    private bool bIsStartPlayVideo = false;
     void KinectGestures.GestureListenerInterface.GestureInProgress(long userId, int userIndex, KinectGestures.Gestures gesture, float progress, KinectInterop.JointType joint, Vector3 screenPos)
     {
         if (CusKincetManager.Instance.mPlayerIndex != userIndex)
             return;
 
         var rhState = KinectManager.Instance.GetRightHandState(userId);
-        if (rhState == KinectInterop.HandState.Closed && CusKincetManager.Instance.CurState == eState.eWaitStart)
+        if (rhState == KinectInterop.HandState.Closed && !bIsStartPlayVideo)
         {
-            if (mImageProgress <= mHoverTime)
+            if (mImageProgress < mHoverTime)
             {
+                SetGameObjectActive(circleParent, true);
                 mImageProgress += Time.deltaTime;
+                bIsStartPlayVideo = false;
             }
             else
             {
-                CheckUserInputInfo();
+                CheckUserInputInfo(eState.eStart);
+                SetGameObjectActive(circleParent, false);
                 mImageProgress = 0f;
+                bIsStartPlayVideo = true;
+                VideoPlayfromStart();
+                return;
             }
         }
-        else if(CusKincetManager.Instance.CurState == eState.eWaitStart && rhState !=KinectInterop.HandState.Closed)
+        else if(bIsStartPlayVideo || rhState != KinectInterop.HandState.Closed)
         {
-            if(mImageProgress>=0)
-                mImageProgress -= Time.deltaTime;
+            if (mImageProgress > 0)
+            {
+                SetGameObjectActive(circleParent, true);
+                mImageProgress -= Time.deltaTime * 2.5f;
+            }
+            else
+            {
+                //CheckUserInputInfo(eState.eWaitStart);
+
+                SetGameObjectActive(circleParent, false);
+                mImageProgress = 0f;
+                bIsStartPlayVideo = false;
+            }
         }
+        //else if(CusKincetManager.Instance.CurState == eState.eWaitStart && rhState !=KinectInterop.HandState.Closed)
+        //{
+        //    if (mImageProgress>0)
+        //    {
+        //        SetGameObjectActive(circleParent, true);
+        //        mImageProgress -= Time.deltaTime*2.0f;
+        //    }
+        //    else
+        //    {
+        //        SetGameObjectActive(circleParent, false);
+        //        mImageProgress = 0f;
+        //    }
+        //}
+        
 
     }
 
@@ -178,5 +222,41 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     public bool GestureCancelled(long userId, int userIndex, KinectGestures.Gestures gesture, KinectInterop.JointType joint)
     {
         return false;
+    }
+
+    //cxk add functions
+    public static void SetGameObjectActive(GameObject go,bool bState)
+    {
+        if (go == null)
+            return;
+        if (go.activeSelf!=bState)
+        {
+            go.SetActive(bState);
+        }
+    }
+
+    public void VideoPlayfromStart()
+    {
+        if (mVideoplayer == null)
+            return;
+        if (mVideoplayer.isPlaying)
+        {
+            mVideoplayer.Stop();
+            mVideoplayer.Play();
+        }
+        else
+        {
+            mVideoplayer.Play();
+        }
+    }
+
+    public void VideoPlayStop()
+    {
+        if (mVideoplayer == null)
+            return;
+        if (mVideoplayer.isPlaying)
+        {
+            mVideoplayer.Stop();
+        }
     }
 }

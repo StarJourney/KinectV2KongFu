@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum eState {eWaitPlayer, eWaitStart, eStart  }
+public enum eState {eWaitPlayer, eWaitStart, eStart }
 
 public delegate void HandleStateChange(eState pState);
 
