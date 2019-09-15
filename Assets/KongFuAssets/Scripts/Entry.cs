@@ -13,6 +13,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     //提示文字。
     public Text mTipsText;
 
+    //cxk add
     public GameObject circleParent;
 
     //进度条相关
@@ -91,6 +92,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
                 mTipsText.text = Tips.WAIT_PLAYER;
 
                 VideoPlayStop();
+                BGMPlay();
                 break;
             case eState.eWaitStart:
                 Debug.Log("waitting player start pratice KongFu!!");
@@ -98,6 +100,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
                 mTipsText.text = Tips.WAIT_START;
 
                 VideoPlayStop();
+                BGMPlay();
                 break;
 
             case eState.eStart:
@@ -105,6 +108,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
                 //eQuit状态要经过处理之后回到eWaitPlayer-->eWaitStart开始下一次体验。
                 mTipsText.text = Tips.WAIT_PRATICING;
                 VideoPlayfromStart();
+                BGMPause();
 
                 Debug.Log("player is started partice KongFu...");
                 break;
@@ -183,21 +187,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
                 bIsStartPlayVideo = false;
             }
         }
-        //else if(CusKincetManager.Instance.CurState == eState.eWaitStart && rhState !=KinectInterop.HandState.Closed)
-        //{
-        //    if (mImageProgress>0)
-        //    {
-        //        SetGameObjectActive(circleParent, true);
-        //        mImageProgress -= Time.deltaTime*2.0f;
-        //    }
-        //    else
-        //    {
-        //        SetGameObjectActive(circleParent, false);
-        //        mImageProgress = 0f;
-        //    }
-        //}
         
-
     }
 
     bool KinectGestures.GestureListenerInterface.GestureCompleted(long userId, int userIndex, KinectGestures.Gestures gesture, KinectInterop.JointType joint, Vector3 screenPos)
@@ -257,6 +247,24 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
         if (mVideoplayer.isPlaying)
         {
             mVideoplayer.Stop();
+        }
+    }
+
+    public static void BGMPause()
+    {
+        var bgm = Camera.main.GetComponent<AudioSource>();
+        if (bgm.isPlaying)
+        {
+            bgm.Pause();
+        }
+    }
+
+    public static void BGMPlay()
+    {
+        var bgm = Camera.main.GetComponent<AudioSource>();
+        if (!bgm.isPlaying)
+        {
+            bgm.Play();
         }
     }
 }
