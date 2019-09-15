@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/KongFuAssets/scenes/KongFu_Scene.unity
+    guid: 6a5f4a2d234474e4d8fdf81fd388c2af
   m_configObjects: {}

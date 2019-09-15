@@ -9,7 +9,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     KinectManager mKm;
     public VideoPlayer mVideoplayer;
     public float mHoverTime = 2.0f;
-
+    public Transform mPlayer;
     //提示文字。
     public Text mTipsText;
 
@@ -33,6 +33,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
 
     private void Update()
     {
+        UpdatePos();
         CheckVideoPlayerState();
         mTimerImage.fillAmount = mImageProgress / mHoverTime;
     }
@@ -44,7 +45,16 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
             CusKincetManager.Instance.CurState = eState.eStart;
         }
     }
-
+    private void UpdatePos()
+    {
+        var userId = KinectManager.Instance.GetUserIdByIndex(CusKincetManager.Instance.mPlayerIndex);
+        var bd = KinectManager.Instance.GetUserBodyData(userId);
+        Vector3 vPos = bd.position;
+        Debug.Log("mpos " + vPos);
+        Vector3 mPos = new Vector3(vPos.x, mPlayer.transform.position.y, vPos.z);
+        mPlayer.transform.localPosition = mPos;
+        
+    }
     private void CheckVideoPlayerState()
     {
         if (mVideoplayer == null)
