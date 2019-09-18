@@ -88,6 +88,11 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     {
         UpdatePos();
         CheckVideoPlayerState();
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
     }
    
     private void CheckUserInputInfo(eState newState)
@@ -301,19 +306,19 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
 
     public static void BGMPause()
     {
-        var bgm = Camera.main.GetComponent<AudioSource>();
-        if (bgm.isPlaying)
-        {
-            bgm.Pause();
-        }
+        //var bgm = Camera.main.GetComponent<AudioSource>();
+        //if (bgm.isPlaying)
+        //{
+        //    bgm.Pause();
+        //}
     }
 
     public static void BGMPlay()
     {
-        var bgm = Camera.main.GetComponent<AudioSource>();
-        if (!bgm.isPlaying)
-        {
-            bgm.Play();
-        }
+        //var bgm = Camera.main.GetComponent<AudioSource>();
+        //if (!bgm.isPlaying)
+        //{
+        //    bgm.Play();
+        //}
     }
 }
