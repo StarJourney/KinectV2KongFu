@@ -20,23 +20,70 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     public float mImageProgress = 0f;
     public Image mTimerImage;
     public Image mCursor;
+    public int mValidDay = 25;
+    public int mUsedNumber = 25;
 
+    public string mTimesKey = "times";
     void Start()
     {
+        bool isVarifyNumber = true;
+        bool isVarifyTime = true;
+        VerifyNumbers(ref isVarifyNumber);
+        VerifyTime(ref isVarifyTime);
+
         if (mVideoplayer == null)
         {
             Debug.LogError("检查VideoPlayer 组件!!");
         }
         if (mTipsText == null)
             Debug.LogError("检查Tips Text 组件!!");
-        mKm = KinectManager.Instance;
-        CusKincetManager.Instance.mHandleStateChange += HandleStateChange;
 
-        //cxk add
-        SetGameObjectActive(circleParent, false);
+        if (isVarifyNumber && isVarifyTime)
+        {
+            mKm = KinectManager.Instance;
+            CusKincetManager.Instance.mHandleStateChange += HandleStateChange;
+
+            //cxk add
+            SetGameObjectActive(circleParent, false);
+        }
+        else {
+            Debug.Log("验证过期，推出游戏");
+            Application.Quit();
+        }
 
     }
 
+    void VerifyNumbers(ref bool pVerify)
+    {
+        if (PlayerPrefs.HasKey(mTimesKey))
+        {
+            var times = PlayerPrefs.GetInt(mTimesKey);
+            if (times >= 5)
+            {
+                pVerify = false;
+                return;
+            }
+
+            int curTime = times + 1;
+            Debug.Log(curTime);
+            PlayerPrefs.SetInt(mTimesKey, curTime);
+            pVerify = true;
+        }
+        else
+        {
+            PlayerPrefs.SetInt(mTimesKey, 0);
+            pVerify = true;
+        }
+    }
+
+    void VerifyTime(ref bool pDay)
+    {
+        if (System.DateTime.Now.Day > mValidDay)
+        {
+            pDay = false;
+        }
+        else pDay = true;
+    }
     private void Update()
     {
         UpdatePos();
@@ -52,13 +99,14 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
     }
     private void UpdatePos()
     {
+        mTimerImage.fillAmount = mImageProgress / mHoverTime;
+
         var userId = KinectManager.Instance.GetUserIdByIndex(CusKincetManager.Instance.mPlayerIndex);
         //Debug.Log("userID===================" + userId);
         var bd = KinectManager.Instance.GetUserBodyData(userId);
         Vector3 vPos = bd.position;
         Vector3 mPos = new Vector3(vPos.x, mPlayer.transform.position.y, vPos.z);
         mPlayer.transform.localPosition = mPos;
-        mTimerImage.fillAmount = mImageProgress / mHoverTime;
 
     }
     private void CheckVideoPlayerState()
@@ -159,6 +207,7 @@ public class Entry : MonoBehaviour ,KinectGestures.GestureListenerInterface
             {
                 SetGameObjectActive(circleParent, true);
                 mImageProgress += Time.deltaTime;
+                mTimerImage.fillAmount = mImageProgress / mHoverTime;
                 bIsStartPlayVideo = false;
             }
             else
